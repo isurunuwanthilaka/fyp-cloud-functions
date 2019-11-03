@@ -3,6 +3,6 @@ const functions = require('firebase-functions');
 // Create and Deploy Your First Cloud Functions
 // https://firebase.google.com/docs/functions/write-firebase-functions
 
-exports.helloWorld = functions.https.onRequest((request, response) => {
-  response.send("Hello from d2d sdr boys! LOL :) ");
+exports.connData = functions.https.onRequest((request, response) => {
+  response.send(`Hello ${request.body.name}!`);
  });

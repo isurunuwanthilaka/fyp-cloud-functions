@@ -1,0 +1,21 @@
+App will send details to the API in this format
+{
+	"deviceID":"10258",
+    "deviceName": "isurunuwanthilaka",
+	"linkSpeed": "72",
+	"connRSSI" : "89",
+	"batteryLevel": "56"
+}
+
+App need data from API in this format
+{
+    "fileName":"doc1.txt",
+    "pairedDeviceID":{
+        "1":"",
+        "2":""
+    },
+    "pairedDeviceName":{
+        "1":"",
+        "2":""
+    },
+}
