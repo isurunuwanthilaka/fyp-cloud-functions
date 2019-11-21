@@ -36,3 +36,26 @@ var ref = db.ref("deviceDataStore");
   })
 
 });
+
+///////////////////////////////Cloud Messagging//////////////////////////////////////////////////////////
+
+
+exports.sendAdminNotification = functions.database.ref('/News/{pushId}').onCreate((snap,context) => {
+    const news= snap.val();
+         if(news.priority===1){
+         const payload = {notification: {
+             title:`${news.title}`,
+             body: `${news.description}`
+             }
+         };
+         
+    return admin.messaging().sendToTopic("News",payload)
+        .then(function(response){
+             console.log('Notification sent successfully:',response);
+             return null
+        }) 
+        .catch(function(error){
+             console.log('Notification sent failed:',error);
+        });
+        }
+    });
