@@ -35,6 +35,61 @@ exports.connData = functions.https.onRequest((req, res) => {
 
 });
 
+
+////////////////////////////file update func///////////////////
+var ref2 = db.ref("TEST_FILE_STORE");
+exports.connFileUpdate = functions.https.onRequest((req, res) => {
+    cors(req, res, () => {
+        const usersRef = ref2.child("test");
+
+        if (req.method !== 'POST') {
+            return res.status(500).json({
+                message: 'Not allowed'
+            })
+        } else {
+            return usersRef.set(
+                req.body
+            ).then(() => {
+                res.status(200).json({
+                    message: req.body
+                });
+                return res.status(200)
+            }).catch(error => {
+                return res.status(500).send(error);
+            })
+        }
+    })
+
+});
+////////////////////////////file update func is over/////////////
+
+////////////////////////////file request func///////////////////
+var ref3 = db.ref("TEST_FILE_REQ");
+exports.connFileRequest = functions.https.onRequest((req, res) => {
+    cors(req, res, () => {
+        const usersRef = ref3.child("test");
+
+        if (req.method !== 'POST') {
+            return res.status(500).json({
+                message: 'Not allowed'
+            })
+        } else {
+            return usersRef.set(
+                req.body
+            ).then(() => {
+                res.status(200).json({
+                    message: req.body
+                });
+                return res.status(200)
+            }).catch(error => {
+                return res.status(500).send(error);
+            })
+        }
+    })
+
+});
+////////////////////////////file update func is over/////////////
+
 ///////////////////////////////Cloud Messagging//////////////////////////////////////////////////////////
 
 exports.sendAdminNotification = functions.database.ref('/News/{pushId}').onCreate((snap, context) => {
