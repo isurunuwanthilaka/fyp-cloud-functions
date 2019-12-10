@@ -40,14 +40,13 @@ exports.connData = functions.https.onRequest((req, res) => {
 var ref2 = db.ref("TEST_FILE_STORE");
 exports.connFileUpdate = functions.https.onRequest((req, res) => {
     cors(req, res, () => {
-        const usersRef = ref2.child("test");
 
         if (req.method !== 'POST') {
             return res.status(500).json({
                 message: 'Not allowed'
             })
         } else {
-            return usersRef.set(
+            return ref2.set(
                 req.body
             ).then(() => {
                 res.status(200).json({
@@ -64,18 +63,27 @@ exports.connFileUpdate = functions.https.onRequest((req, res) => {
 ////////////////////////////file update func is over/////////////
 
 ////////////////////////////file request func///////////////////
-var ref3 = db.ref("TEST_FILE_REQ");
+var ref3 = db.ref("News");
 exports.connFileRequest = functions.https.onRequest((req, res) => {
     cors(req, res, () => {
-        const usersRef = ref3.child("test");
+        //const usersRef = ref3.child("test");
 
         if (req.method !== 'POST') {
             return res.status(500).json({
                 message: 'Not allowed'
             })
         } else {
-            return usersRef.set(
-                req.body
+            return ref3.push(
+                {
+                    "description": "First Pairing",
+                    "priority": 1,
+                    "title": "Test pairing",
+                    "device1ID": "QaA6FrpGZKariA7xFAdcb5rjfXi2",
+                    "device1SSID": "Isuru Nuwanthilaka",
+                    "device2ID": "nmRvoJeiC6ZvzRQ1LRh7KqBzQj83",
+                    "device2SSID": "Lochana Chathura",
+                    "fileName":`${req.body.fileName}`
+                  }
             ).then(() => {
                 res.status(200).json({
                     message: req.body
