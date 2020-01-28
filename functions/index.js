@@ -204,7 +204,9 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
 
         var hasFile = [];                                                                 //file containing devices
         fileSnapshot.child('availableDeviceIDs').forEach(function (childSnapshot) {
-          hasFile.push(childSnapshot.key);
+          if (childSnapshot.key !== req.body.deviceID){
+            hasFile.push(childSnapshot.key);
+          }
         })
 
         deviecStore.on('value', function (snapshot) {
@@ -230,16 +232,18 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
           var requestingDeviceSSID = snapshot.child(`${req.body.deviceID}`).child('deviceSSIDName').val();
           var pairDeviceSSID = snapshot.child(`${pairDevice}`).child('deviceSSIDName').val();
 
+          var fileNameString = fileSnapshot.child('fileName').val();
+
           admin
             .database()
-            .ref('/News/pairedDeviceDetailes')
-            .update({
+            .ref('/News')
+            .push({
               description: 'Test description',
               device1ID: `${req.body.deviceID}`,
               device1SSID: `${requestingDeviceSSID}`,
               device2ID: `${pairDevice}`,
               device2SSID: `${pairDeviceSSID}`,
-              fileName: `${req.body.fileName}`,
+              fileName: fileNameString,
               priority: 1,
               title: "Test tiltle"
             });
