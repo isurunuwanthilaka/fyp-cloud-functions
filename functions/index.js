@@ -202,36 +202,77 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
 
         const deviecStore = admin.database().ref('/deviceDataStore/');
 
+        //building file available deviceID list
         var hasFile = [];                                                                 //file containing devices
         fileSnapshot.child('availableDeviceIDs').forEach(function (childSnapshot) {
-          if (childSnapshot.key !== req.body.deviceID){
+          if (childSnapshot.key !== req.body.deviceID) {
             hasFile.push(childSnapshot.key);
           }
         })
 
         deviecStore.on('value', function (snapshot) {
 
-          var requestingDeviceRssi = snapshot.child(`${req.body.deviceID}`).child('connRSSI').val();
+          //declaring constants
+          var a_1 = -0.14;
+          var a_2 = -2.493;
+          var a_3 = -2.952;
+          var b_1 = -52.9;
+          var b_2 = -38.85;
+          var b_3 = -41.31;
+          var p = -53.83
+          var rssi_1 = -1 * Number(snapshot.child(`${req.body.deviceID}`).child('connRSSI').val());
           var deviceScore = {};
+          var r_1 = 0;
+          var r_1_db = 0;
 
+          //finding r_1
+          if (rssi_1 > p) {
+            r_1_db = (rssi_1 - b_1) / a_1;
+          } else {
+            r_1_db = (rssi_1 - b_2) / a_2;
+          }
+
+          r_1 = Math.pow(10, r_1_db * 0.1);
+
+          //finding threshold r
+          var r_th_db = (rssi_1 - b_3) / a_3;
+          var r_th = Math.pow(10, r_th_db * 0.1)
+
+          //calculate r_i and prob_i
           snapshot.forEach(function (childSnapshot) {
-
+            //iterating over deviceIDs
             if (hasFile.includes(childSnapshot.key)) {
-              var rssiScore = Math.abs((Number(childSnapshot.child('connRSSI').val()) - Number(requestingDeviceRssi)));
-              var finalScore = ((100 - rssiScore) + 0.01 * Number(childSnapshot.child('batteryLevel').val()) + Number(childSnapshot.child('linkSpeed').val()))
-                .toFixed(2);
+              var rssi_i = -1 * Number(childSnapshot.child('connRSSI').val());
 
-              deviceScore[childSnapshot.key] = finalScore
+              //finding r_i
+              var r_i = 0;
+              var r_i_db = 0;
+
+              if (rssi_i > p) {
+                r_i_db = (rssi_i - b_1) / a_1;
+              } else {
+                r_i_db = (rssi_i - b_2) / a_2;
+              }
+
+              r_i = Math.pow(10, r_i_db * 0.1);
+
+              //finding prob_i
+              var prob_i = Math.acos((Math.pow(r_1, 2) + Math.pow(r_i, 2) - Math.pow(r_th, 2)) / (2 * r_1 * r_i)) / Math.PI;
+
+              //TODO: Add these to formulation
+              var batteryLevel_i = Number(childSnapshot.child('batteryLevel').val());
+              var linkSpeed_i = Number(childSnapshot.child('linkSpeed').val());
+
+              deviceScore[childSnapshot.key] = prob_i
             }
           });
 
-          console.log(deviceScore);
-
+          //get the deviceID with maximum score
           var pairDevice = _.max(Object.keys(deviceScore), o => deviceScore[o]);     //getting the highest score device
 
+          //getting the device names to d2d link connection and file name
           var requestingDeviceSSID = snapshot.child(`${req.body.deviceID}`).child('deviceSSIDName').val();
           var pairDeviceSSID = snapshot.child(`${pairDevice}`).child('deviceSSIDName').val();
-
           var fileNameString = fileSnapshot.child('fileName').val();
 
           admin
