@@ -203,11 +203,26 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
         const deviecStore = admin.database().ref('/deviceDataStore/');
 
         //building file available deviceID list
-        var hasFile = [];                                                                 //file containing devices
+        var hasFile = [];
+                                                                       //file containing devices
         fileSnapshot.child('availableDeviceIDs').forEach(function (childSnapshot) {
-          if (childSnapshot.key !== req.body.deviceID) {
-            hasFile.push(childSnapshot.key);
+          let batteryLevel = 0;
+          //getting the battery level of device
+          deviecStore.on('value', function (snapshotOne) {
+            batteryLevel = Number(snapshotOne.child(`${childSnapshot.key}`).child('batteryLevel').val());
+            console.log('1 id:'+childSnapshot.key)
+            console.log('2 battery :'+batteryLevel.toString());
+            //consider the battery level
+            if ((childSnapshot.key !== req.body.deviceID) && (batteryLevel > 5)) {
+              console.log('3 inside:'+childSnapshot.key)
+              hasFile.push(childSnapshot.key);
+            }
+            console.log('inside hasFile list :' + hasFile.toString());
+            
           }
+          );
+         
+          console.log('outside hasFile list :' + hasFile.toString());
         })
 
         deviecStore.on('value', function (snapshot) {
@@ -258,10 +273,6 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
 
               //finding prob_i
               var prob_i = Math.acos((Math.pow(r_1, 2) + Math.pow(r_i, 2) - Math.pow(r_th, 2)) / (2 * r_1 * r_i)) / Math.PI;
-
-              //TODO: Add these to formulation
-              var batteryLevel_i = Number(childSnapshot.child('batteryLevel').val());
-              var linkSpeed_i = Number(childSnapshot.child('linkSpeed').val());
 
               deviceScore[childSnapshot.key] = prob_i
             }
