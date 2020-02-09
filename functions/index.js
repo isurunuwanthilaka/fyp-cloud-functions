@@ -52,16 +52,7 @@ exports.onFileDelete = functions.storage.object().onDelete(object => {
   return console.log(`${childFilePath}` + " is removed from Filestore!")
 });
 
-exports.onDataAdded = functions.database
-  .ref('/message/{id}')
-  .onCreate((snap, context) => {
-    const data = snap.val();
-    const newData = {
-      msg: snap.key + ' - ' + data.msg.toUpperCase()
-    };
-    console.log(snap.key);
-    return snap.ref.parent.child('copiedData').set(newData);
-  });
+
 
 //////////////////////////   API END POINT 1 - Posting Device Data   //////////////////////////////
 
@@ -78,7 +69,7 @@ exports.connData = functions.https.onRequest((req, res) => {
       });
     } else {
       return usersRef
-        .set(req.body)
+        .update(req.body)
         .then(() => {
           res.status(200).json({
             message: req.body
@@ -271,8 +262,10 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
 
               r_i = Math.pow(10, r_i_db * 0.1);
 
+              r_th_map = Math.max(Math.min(r_th,(r_1+r_i)),Math.abs(r_1-r_i));      //limiting r_th
+
               //finding prob_i
-              var prob_i = Math.acos((Math.pow(r_1, 2) + Math.pow(r_i, 2) - Math.pow(r_th, 2)) / (2 * r_1 * r_i)) / Math.PI;
+              var prob_i = Math.acos((Math.pow(r_1, 2) + Math.pow(r_i, 2) - Math.pow(r_th_map, 2)) / (2 * r_1 * r_i)) / Math.PI;
 
               deviceScore[childSnapshot.key] = prob_i
             }
@@ -297,7 +290,7 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
               device2SSID: `${pairDeviceSSID}`,
               fileName: fileNameString,
               priority: 1,
-              title: "Test tiltle"
+              title: "Test Title"
             });
           return res.status(200).json({
             download: 0,
