@@ -60,7 +60,7 @@ const db = admin.database();
 const ref = db.ref('deviceDataStore');
 
 exports.connData = functions.https.onRequest((req, res) => {
-  cors(req, res, () => {
+  cors(req, res, async () => {
     const usersRef = ref.child(`${req.body.deviceID}`);
 
     if (req.method !== 'POST') {
