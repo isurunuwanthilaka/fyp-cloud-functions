@@ -262,10 +262,12 @@ exports.connFileRequest = functions.https.onRequest((req, res) => {
 
               r_i = Math.pow(10, r_i_db * 0.1);
 
-              r_th_map = Math.max(Math.min(r_th,(r_1+r_i)),Math.abs(r_1-r_i));      //limiting r_th
+               //limiting r_th
+              acos_val = ((Math.pow(r_1, 2) + Math.pow(r_i, 2) - Math.pow(r_th, 2)) / (2 * r_1 * r_i));
+              acos_val_limit = Math.max(Math.min(acos_val,1),-1);
 
               //finding prob_i
-              var prob_i = Math.acos((Math.pow(r_1, 2) + Math.pow(r_i, 2) - Math.pow(r_th_map, 2)) / (2 * r_1 * r_i)) / Math.PI;
+              var prob_i = Math.acos(acos_val_limit) / Math.PI;
 
               deviceScore[childSnapshot.key] = prob_i
             }
